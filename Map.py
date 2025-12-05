@@ -1,94 +1,107 @@
 class Map:
-#“”“A dictionary-like class that supports both hashable and non-hashable keys.”””
-
-
-  def __init__(self):
-    self._hashable = {}  # For hashable keys
-    self._non_hashable = {}  # For non-hashable keys: {id(key): [key, value]}
-
-  def __setitem__(self, key, value):
-    """Set an item in the map."""
-    try:
-        # Try to use the key as a hashable key
-        hash(key)
-        self._hashable[key] = value
-    except TypeError:
-        # Key is not hashable, use id() for O(1) lookup
-        key_id = id(key)
-        self._non_hashable[key_id] = [key, value]
-
-  def __getitem__(self, key):
-    """Get an item from the map."""
-    try:
-        hash(key)
-        return self._hashable[key]
-    except TypeError:
-        # Key is not hashable, use id() for O(1) lookup
-        key_id = id(key)
-        if key_id not in self._non_hashable:
-            raise KeyError(key)
-        return self._non_hashable[key_id][1]
-
-  def __delitem__(self, key):
-    """Delete an item from the map."""
-    try:
-        hash(key)
-        del self._hashable[key]
-    except TypeError:
-        # Key is not hashable, use id() for O(1) lookup
-        key_id = id(key)
-        if key_id not in self._non_hashable:
-            raise KeyError(key)
-        del self._non_hashable[key_id]
-
-  def __contains__(self, key):
-    """Check if a key exists in the map."""
-    try:
-        hash(key)
-        return key in self._hashable
-    except TypeError:
-        key_id = id(key)
-        return key_id in self._non_hashable
-
-  def __len__(self):
-    """Return the total number of items in the map."""
-    return len(self._hashable) + len(self._non_hashable)
-
-  def __repr__(self):
-    """Return a string representation of the map."""
-    items = []
-    for k, v in self._hashable.items():
-        items.append(f"{k!r}: {v!r}")
-    for k, v in self._non_hashable.values():
-        items.append(f"{k!r}: {v!r}")
-    return "{" + ", ".join(items) + "}"
-
-  def get(self, key, default=None):
-    """Get an item with a default value if not found."""
-    try:
-        return self[key]
-    except KeyError:
-        return default
-
-  def keys(self):
-    """Return all keys in the map."""
-    keys = list(self._hashable.keys())
-    keys.extend(k for k, v in self._non_hashable.values())
-    return keys
-
-  def values(self):
-    """Return all values in the map."""
-    values = list(self._hashable.values())
-    values.extend(v for k, v in self._non_hashable.values())
-    return values
-
-  def items(self):
-    """Return all key-value pairs in the map."""
-    items = list(self._hashable.items())
-    items.extend(self._non_hashable.values())
-    return items
-
-  def __getattr__(self, name):
+    """A dictionary-like class that supports both hashable and non-hashable keys."""
+    
+    def __init__(self, iterable=None):
+        self._hashable = {}  # For hashable keys
+        self._non_hashable = {}  # For non-hashable keys: {id(key): [key, value]}
+        
+        if iterable is not None:
+            # Support Map([(k1, v1), (k2, v2)]) or Map([[k1, v1], [k2, v2]])
+            for item in iterable:
+                if len(item) != 2:
+                    raise ValueError("Map iterable must contain key-value pairs")
+                key, value = item
+                self[key] = value
+    
+    def __setitem__(self, key, value):
+        """Set an item in the map."""
+        try:
+            # Try to use the key as a hashable key
+            hash(key)
+            self._hashable[key] = value
+        except TypeError:
+            # Key is not hashable, use id() for O(1) lookup
+            key_id = id(key)
+            self._non_hashable[key_id] = [key, value]
+    
+    def __getitem__(self, key):
+        """Get an item from the map."""
+        try:
+            hash(key)
+            return self._hashable[key]
+        except TypeError:
+            # Key is not hashable, use id() for O(1) lookup
+            key_id = id(key)
+            if key_id not in self._non_hashable:
+                raise KeyError(key)
+            return self._non_hashable[key_id][1]
+    
+    def __delitem__(self, key):
+        """Delete an item from the map."""
+        try:
+            hash(key)
+            del self._hashable[key]
+        except TypeError:
+            # Key is not hashable, use id() for O(1) lookup
+            key_id = id(key)
+            if key_id not in self._non_hashable:
+                raise KeyError(key)
+            del self._non_hashable[key_id]
+    
+    def __contains__(self, key):
+        """Check if a key exists in the map."""
+        try:
+            hash(key)
+            return key in self._hashable
+        except TypeError:
+            key_id = id(key)
+            return key_id in self._non_hashable
+    
+    def __len__(self):
+        """Return the total number of items in the map."""
+        return len(self._hashable) + len(self._non_hashable)
+    
+    def __repr__(self):
+        """Return a string representation of the map."""
+        items = []
+        for k, v in self._hashable.items():
+            items.append(f"{k!r}: {v!r}")
+        for k, v in self._non_hashable.values():
+            items.append(f"{k!r}: {v!r}")
+        return "{" + ", ".join(items) + "}"
+    
+    def __iter__(self):
+        """Iterate over keys in the map (matches JavaScript Map behavior)."""
+        yield from self._hashable.keys()
+        for k, v in self._non_hashable.values():
+            yield k
+    
+    def get(self, key, default=None):
+        """Get an item with a default value if not found."""
+        try:
+            return self[key]
+        except KeyError:
+            return default
+    
+    def keys(self):
+        """Return all keys in the map."""
+        keys = list(self._hashable.keys())
+        keys.extend(k for k, v in self._non_hashable.values())
+        return keys
+    
+    def values(self):
+        """Return all values in the map."""
+        values = list(self._hashable.values())
+        values.extend(v for k, v in self._non_hashable.values())
+        return values
+    
+    def items(self):
+        """Return all key-value pairs in the map."""
+        items = list(self._hashable.items())
+        items.extend(self._non_hashable.values())
+        return items
+    
+    def __getattr__(self, name):
         """Allow dot notation for getting values: m.key instead of m['key']"""
         # Avoid infinite recursion for internal attributes
         if name.startswith('_'):
@@ -98,7 +111,7 @@ class Map:
         except KeyError:
             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
     
-  def __setattr__(self, name, value):
+    def __setattr__(self, name, value):
         """Allow dot notation for setting values: m.key = value instead of m['key'] = value"""
         # Internal attributes should be set normally
         if name.startswith('_'):
@@ -106,7 +119,7 @@ class Map:
         else:
             self[name] = value
     
-  def __delattr__(self, name):
+    def __delattr__(self, name):
         """Allow dot notation for deleting values: del m.key instead of del m['key']"""
         if name.startswith('_'):
             super().__delattr__(name)
@@ -115,3 +128,4 @@ class Map:
                 del self[name]
             except KeyError:
                 raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
