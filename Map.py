@@ -87,3 +87,31 @@ def items(self):
     items = list(self._hashable.items())
     items.extend(self._non_hashable.values())
     return items
+
+def __getattr__(self, name):
+        """Allow dot notation for getting values: m.key instead of m['key']"""
+        # Avoid infinite recursion for internal attributes
+        if name.startswith('_'):
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+    
+def __setattr__(self, name, value):
+        """Allow dot notation for setting values: m.key = value instead of m['key'] = value"""
+        # Internal attributes should be set normally
+        if name.startswith('_'):
+            super().__setattr__(name, value)
+        else:
+            self[name] = value
+    
+def __delattr__(self, name):
+        """Allow dot notation for deleting values: del m.key instead of del m['key']"""
+        if name.startswith('_'):
+            super().__delattr__(name)
+        else:
+            try:
+                del self[name]
+            except KeyError:
+                raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
