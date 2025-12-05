@@ -2,11 +2,11 @@ class Map:
 #“”“A dictionary-like class that supports both hashable and non-hashable keys.”””
 
 
-def __init__(self):
+  def __init__(self):
     self._hashable = {}  # For hashable keys
     self._non_hashable = {}  # For non-hashable keys: {id(key): [key, value]}
 
-def __setitem__(self, key, value):
+  def __setitem__(self, key, value):
     """Set an item in the map."""
     try:
         # Try to use the key as a hashable key
@@ -17,7 +17,7 @@ def __setitem__(self, key, value):
         key_id = id(key)
         self._non_hashable[key_id] = [key, value]
 
-def __getitem__(self, key):
+  def __getitem__(self, key):
     """Get an item from the map."""
     try:
         hash(key)
@@ -29,7 +29,7 @@ def __getitem__(self, key):
             raise KeyError(key)
         return self._non_hashable[key_id][1]
 
-def __delitem__(self, key):
+  def __delitem__(self, key):
     """Delete an item from the map."""
     try:
         hash(key)
@@ -41,7 +41,7 @@ def __delitem__(self, key):
             raise KeyError(key)
         del self._non_hashable[key_id]
 
-def __contains__(self, key):
+  def __contains__(self, key):
     """Check if a key exists in the map."""
     try:
         hash(key)
@@ -50,11 +50,11 @@ def __contains__(self, key):
         key_id = id(key)
         return key_id in self._non_hashable
 
-def __len__(self):
+  def __len__(self):
     """Return the total number of items in the map."""
     return len(self._hashable) + len(self._non_hashable)
 
-def __repr__(self):
+  def __repr__(self):
     """Return a string representation of the map."""
     items = []
     for k, v in self._hashable.items():
@@ -63,32 +63,32 @@ def __repr__(self):
         items.append(f"{k!r}: {v!r}")
     return "{" + ", ".join(items) + "}"
 
-def get(self, key, default=None):
+  def get(self, key, default=None):
     """Get an item with a default value if not found."""
     try:
         return self[key]
     except KeyError:
         return default
 
-def keys(self):
+  def keys(self):
     """Return all keys in the map."""
     keys = list(self._hashable.keys())
     keys.extend(k for k, v in self._non_hashable.values())
     return keys
 
-def values(self):
+  def values(self):
     """Return all values in the map."""
     values = list(self._hashable.values())
     values.extend(v for k, v in self._non_hashable.values())
     return values
 
-def items(self):
+  def items(self):
     """Return all key-value pairs in the map."""
     items = list(self._hashable.items())
     items.extend(self._non_hashable.values())
     return items
 
-def __getattr__(self, name):
+  def __getattr__(self, name):
         """Allow dot notation for getting values: m.key instead of m['key']"""
         # Avoid infinite recursion for internal attributes
         if name.startswith('_'):
@@ -98,7 +98,7 @@ def __getattr__(self, name):
         except KeyError:
             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
     
-def __setattr__(self, name, value):
+  def __setattr__(self, name, value):
         """Allow dot notation for setting values: m.key = value instead of m['key'] = value"""
         # Internal attributes should be set normally
         if name.startswith('_'):
@@ -106,7 +106,7 @@ def __setattr__(self, name, value):
         else:
             self[name] = value
     
-def __delattr__(self, name):
+  def __delattr__(self, name):
         """Allow dot notation for deleting values: del m.key instead of del m['key']"""
         if name.startswith('_'):
             super().__delattr__(name)
